@@ -15,6 +15,22 @@ function speak(text) {
   window.speechSynthesis.speak(message);
 }
 
+function updateMetrics(metrics) {
+  const customerNode = document.getElementById("stat-customers");
+  const mrrNode = document.getElementById("stat-mrr");
+  const unpaidNode = document.getElementById("stat-unpaid");
+  const criticalNode = document.getElementById("critical-count");
+
+  if (!customerNode || !mrrNode || !unpaidNode || !criticalNode) {
+    return;
+  }
+
+  customerNode.textContent = metrics.customer_count;
+  mrrNode.textContent = `$${Number(metrics.mrr).toFixed(2)}`;
+  unpaidNode.textContent = `$${Number(metrics.unpaid).toFixed(2)}`;
+  criticalNode.textContent = metrics.critical_count;
+}
+
 function announceCriticalAlertsFromDom() {
   const alertItems = document.querySelectorAll("#alerts-list li[data-id]");
   alertItems.forEach((item) => {
@@ -30,6 +46,24 @@ function announceCriticalAlertsFromDom() {
   });
 }
 
+async function pollApi() {
+  try {
+    const [metricsResponse, eventsResponse] = await Promise.all([
+      fetch("/api/metrics", { headers: { Accept: "application/json" } }),
+      fetch("/api/events?unacknowledged_only=true", { headers: { Accept: "application/json" } }),
+    ]);
+
+    if (metricsResponse.ok) {
+      const metrics = await metricsResponse.json();
+      updateMetrics(metrics);
+    }
+
+    if (eventsResponse.ok) {
+      const events = await eventsResponse.json();
+      const hasNewCritical = events.some((event) => event.severity === "critical" && !announcedEventIds.has(event.id));
+      if (hasNewCritical) {
+        window.location.reload();
+      }
 async function pollUnacknowledgedEvents() {
   try {
     const response = await fetch("/api/events?unacknowledged_only=true", { headers: { Accept: "application/json" } });
@@ -49,6 +83,7 @@ async function pollUnacknowledgedEvents() {
 
 if (alertsList) {
   announceCriticalAlertsFromDom();
+  setInterval(pollApi, 15000);
   setInterval(pollUnacknowledgedEvents, 15000);
 }
 

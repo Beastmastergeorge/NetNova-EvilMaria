@@ -51,6 +51,16 @@ def build_web_router(get_session, templates: Jinja2Templates) -> APIRouter:
         session.commit()
         return RedirectResponse(url="/", status_code=303)
 
+    @router.post("/customers/{customer_id}/toggle")
+    def toggle_customer_status(customer_id: int, session: Session = Depends(get_session)):
+        customer = session.get(Customer, customer_id)
+        if not customer:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        customer.active = not customer.active
+        session.add(customer)
+        session.commit()
+        return RedirectResponse(url="/", status_code=303)
+
     @router.post("/invoices")
     def create_invoice(
         customer_id: int = Form(...),

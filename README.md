@@ -1,3 +1,20 @@
+# NetNova Billing + EVIL MARIA
+
+Production-ready starter for an ISP billing platform (**NetNova**) integrated with a monitoring & notification web application (**EVIL MARIA**) with speech-alert capabilities.
+
+## Included stack
+
+- **Backend API**: FastAPI + SQLModel + SQLite (drop-in replaceable with PostgreSQL)
+- **Frontend UI**: Server-rendered Jinja dashboard with responsive CSS and live polling JS
+- **Operations features**:
+  - customer provisioning and status toggle
+  - invoice generation and payment updates
+  - monitoring event ingestion and acknowledgement
+  - real-time KPI cards and critical alert tracking
+  - browser speech notifications for critical incidents
+- **Deployment**: Gunicorn/Uvicorn startup script, Dockerfile, docker-compose, env template
+
+## Project structure
 # NetNova Billing + EVIL MARIA (Production-Ready Starter)
 
 A production-focused starter platform for an ISP-grade billing system (**NetNova**) integrated with a monitoring and notification web app (**EVIL MARIA**) including browser speech alerts.
@@ -21,6 +38,9 @@ A production-focused starter platform for an ISP-grade billing system (**NetNova
 app/
   config.py
   database.py
+  main.py
+  models.py
+  schemas.py
   models.py
   schemas.py
   main.py
@@ -29,6 +49,11 @@ app/
     web.py
   services/
     metrics.py
+  templates/
+    dashboard.html
+  static/
+    style.css
+    app.js
   templates/dashboard.html
   static/style.css
   static/app.js
@@ -49,6 +74,11 @@ cp .env.example .env
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
+Open `http://127.0.0.1:8000`.
+
+## API docs
+
+- Swagger UI: `http://127.0.0.1:8000/docs`
 Open: `http://127.0.0.1:8000`
 
 ## Run in production mode (without Docker)
@@ -65,6 +95,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
+## Run tests
 ## API quick checks
 
 ```bash
@@ -78,6 +109,12 @@ curl http://127.0.0.1:8000/api/metrics
 pytest -q
 ```
 
+## Notes for production hardening
+
+- Add auth + RBAC
+- Add Alembic migrations and PostgreSQL
+- Add asynchronous workers for external channels (email/SMS/voice)
+- Add observability and CI/CD checks
 ## Production hardening next steps
 
 - Add authentication and role-based access control.

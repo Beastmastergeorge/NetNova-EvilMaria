@@ -24,6 +24,7 @@ def test_dashboard_loads(tmp_path: Path):
     client = create_test_client(tmp_path)
     response = client.get("/")
     assert response.status_code == 200
+    assert "NetNova" in response.text
     assert "NetNova ISP Billing" in response.text
     assert "EVIL MARIA" in response.text
 
@@ -42,6 +43,26 @@ def test_api_customer_invoice_and_event_flow(tmp_path: Path):
         },
     )
     assert customer_response.status_code == 201
+    customer_id = customer_response.json()["id"]
+
+    list_customers = client.get("/api/customers")
+    assert list_customers.status_code == 200
+    assert len(list_customers.json()) == 1
+
+    update_customer = client.patch(f"/api/customers/{customer_id}", json={"active": False, "plan_name": "Enterprise 2G"})
+    assert update_customer.status_code == 200
+    assert update_customer.json()["active"] is False
+
+    invoice_response = client.post(
+        "/api/invoices",
+        json={"customer_id": customer_id, "billing_month": "2026-01", "amount": 249.99},
+    )
+    assert invoice_response.status_code == 201
+    invoice_id = invoice_response.json()["id"]
+
+    invoice_update = client.patch(f"/api/invoices/{invoice_id}", json={"status": "paid"})
+    assert invoice_update.status_code == 200
+    assert invoice_update.json()["status"] == "paid"
 
     invoice_response = client.post(
         "/api/invoices",
@@ -58,3 +79,7 @@ def test_api_customer_invoice_and_event_flow(tmp_path: Path):
     ack_response = client.post("/api/events/1/ack")
     assert ack_response.status_code == 200
     assert ack_response.json()["acknowledged"] is True
+
+    metrics = client.get("/api/metrics")
+    assert metrics.status_code == 200
+    assert metrics.json()["customer_count"] == 1
