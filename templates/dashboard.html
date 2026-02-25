@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NetNova + EVIL MARIA Control Center</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <header>
+      <h1>NetNova Billing + EVIL MARIA Monitoring</h1>
+      <p>ISP-grade revenue, uptime, and customer comms orchestration.</p>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <section class="flash-wrap">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </section>
+      {% endif %}
+    {% endwith %}
+
+    <main>
+      <section class="stats">
+        <article>
+          <h3>Active Customers</h3>
+          <p>{{ totals.customers }}</p>
+        </article>
+        <article>
+          <h3>Monthly Recurring Revenue</h3>
+          <p>${{ '%.2f'|format(totals.monthly_mrr) }}</p>
+        </article>
+        <article>
+          <h3>Open Receivables</h3>
+          <p>${{ '%.2f'|format(receivables.open_receivables) }}</p>
+        </article>
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <h2>Customer Onboarding</h2>
+          <form method="post" action="/customers">
+            <input name="name" placeholder="Company Name" required />
+            <input name="plan" placeholder="Plan Name" required />
+            <input name="monthly_rate" type="number" min="1" step="0.01" placeholder="Monthly Rate" required />
+            <input name="phone" placeholder="Phone" required />
+            <input name="email" type="email" placeholder="Billing Email" required />
+            <button type="submit">Add Customer</button>
+          </form>
+
+          <h3>Current Accounts</h3>
+          <ul>
+            {% for customer in customers %}
+              <li>
+                <strong>{{ customer.name }}</strong> · {{ customer.plan }} · ${{ '%.2f'|format(customer.monthly_rate) }}
+              </li>
+            {% endfor %}
+          </ul>
+        </article>
+
+        <article class="panel">
+          <h2>Billing Operations</h2>
+          <form method="post" action="/invoices">
+            <select name="customer_id" required>
+              <option value="">Select customer</option>
+              {% for customer in customers %}
+                <option value="{{ customer.id }}">{{ customer.name }}</option>
+              {% endfor %}
+            </select>
+            <input name="amount" type="number" min="1" step="0.01" placeholder="Invoice Amount" required />
+            <input name="due_days" type="number" min="1" max="90" value="14" placeholder="Due in days" required />
+            <button type="submit">Generate Invoice</button>
+          </form>
+
+          <h3>Recent Invoices</h3>
+          <ul>
+            {% for invoice in invoices %}
+              <li>
+                <strong>{{ invoice.customer_name }}</strong> · ${{ '%.2f'|format(invoice.amount) }} · due {{ invoice.due_date }}
+              </li>
+            {% else %}
+              <li>No invoices yet.</li>
+            {% endfor %}
+          </ul>
+        </article>
+
+        <article class="panel">
+          <h2>EVIL MARIA Monitoring</h2>
+          <div class="inline">
+            <button id="run-monitor" type="button">Run Health Cycle</button>
+            <label class="toggle">
+              <input id="voice-toggle" type="checkbox" checked />
+              Voice Notifications
+            </label>
+          </div>
+
+          <h3>Network Nodes</h3>
+          <ul>
+            {% for node in nodes %}
+              <li>
+                <strong>{{ node.name }}</strong> · {{ node.region }} ·
+                <span class="pill {{ node.health }}">{{ node.health }}</span>
+                {% if node.last_latency_ms %}
+                  · {{ node.last_latency_ms }}ms
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+
+          <h3>Recent Alerts</h3>
+          <ul id="alerts-list">
+            {% for alert in alerts %}
+              <li>
+                <strong>[{{ alert.severity|upper }}]</strong> {{ alert.message }} <small>({{ alert.created_at }})</small>
+              </li>
+            {% else %}
+              <li>No alerts.</li>
+            {% endfor %}
+          </ul>
+        </article>
+
+        <article class="panel">
+          <h2>Notification Dispatch</h2>
+          <p>Send targeted messages via EVIL MARIA (email, SMS, voice callback).</p>
+          <form method="post" action="/notifications">
+            <select name="channel" required>
+              <option value="email">Email</option>
+              <option value="sms">SMS</option>
+              <option value="voice">Voice Callback</option>
+            </select>
+            <input name="target" placeholder="Target recipient" required />
+            <textarea name="message" placeholder="Notification message" rows="4" required></textarea>
+            <button type="submit">Send Notification</button>
+          </form>
+        </article>
+      </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>
