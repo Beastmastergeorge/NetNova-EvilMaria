@@ -12,10 +12,6 @@ class CustomerCreate(BaseModel):
     monthly_rate: float = Field(ge=0)
     due_day: int = Field(ge=1, le=31)
     email: str = Field(min_length=5, max_length=255)
-    has_router: bool = False
-    router_identity: Optional[str] = Field(default=None, min_length=2, max_length=120)
-    wan_interface: str = Field(default="ether1", min_length=2, max_length=40)
-    lan_interface: str = Field(default="ether2", min_length=2, max_length=40)
 
 
 class CustomerUpdate(BaseModel):
@@ -32,21 +28,7 @@ class CustomerOut(BaseModel):
     monthly_rate: float
     due_day: int
     email: str
-    has_router: bool
-    router_identity: Optional[str]
-    wan_interface: str
-    lan_interface: str
     active: bool
-    created_at: datetime
-
-
-class RouterProvisionOut(BaseModel):
-    id: int
-    customer_id: int
-    subnet_cidr: str
-    gateway_ip: str
-    customer_ip: str
-    script: str
     created_at: datetime
 
 

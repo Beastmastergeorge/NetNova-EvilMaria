@@ -13,21 +13,7 @@ class Customer(SQLModel, table=True):
     monthly_rate: float = Field(ge=0)
     due_day: int = Field(ge=1, le=31)
     email: str = Field(min_length=5, max_length=255, index=True)
-    has_router: bool = Field(default=False, index=True)
-    router_identity: Optional[str] = Field(default=None, max_length=120)
-    wan_interface: str = Field(default="ether1", max_length=40)
-    lan_interface: str = Field(default="ether2", max_length=40)
     active: bool = True
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-
-
-class RouterProvision(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    customer_id: int = Field(foreign_key="customer.id", unique=True, index=True)
-    subnet_cidr: str = Field(max_length=32)
-    gateway_ip: str = Field(max_length=40)
-    customer_ip: str = Field(max_length=40)
-    script: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 

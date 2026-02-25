@@ -3,41 +3,12 @@ from __future__ import annotations
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 
-from app.models import Customer, Invoice, MonitoringEvent, RouterProvision
+from app.models import Customer, Invoice, MonitoringEvent
 from app.services.metrics import collect_dashboard_metrics
-from app.services.mikrotik import assign_point_to_point_block, build_mikrotik_script
-
-
-def _ensure_router_provision(session: Session, customer: Customer) -> RouterProvision:
-    existing = session.exec(select(RouterProvision).where(RouterProvision.customer_id == customer.id)).first()
-    if existing:
-        return existing
-
-    assignment = assign_point_to_point_block(customer.id)
-    identity = customer.router_identity or f"NetNova-CPE-{customer.id}"
-    script = build_mikrotik_script(
-        customer_name=customer.name,
-        router_identity=identity,
-        wan_interface=customer.wan_interface,
-        lan_interface=customer.lan_interface,
-        gateway_ip=assignment.gateway_ip,
-        customer_ip=assignment.customer_ip,
-    )
-    provision = RouterProvision(
-        customer_id=customer.id,
-        subnet_cidr=assignment.subnet_cidr,
-        gateway_ip=assignment.gateway_ip,
-        customer_ip=assignment.customer_ip,
-        script=script,
-    )
-    session.add(provision)
-    session.commit()
-    session.refresh(provision)
-    return provision
 
 
 def build_web_router(get_session, templates: Jinja2Templates) -> APIRouter:
@@ -48,7 +19,6 @@ def build_web_router(get_session, templates: Jinja2Templates) -> APIRouter:
         customers = session.exec(select(Customer).order_by(Customer.created_at.desc())).all()
         invoices = session.exec(select(Invoice).order_by(Invoice.created_at.desc())).all()
         events = session.exec(select(MonitoringEvent).order_by(MonitoringEvent.created_at.desc())).all()
-        router_configs = session.exec(select(RouterProvision).order_by(RouterProvision.created_at.desc())).all()
 
         return templates.TemplateResponse(
             "dashboard.html",
@@ -57,7 +27,6 @@ def build_web_router(get_session, templates: Jinja2Templates) -> APIRouter:
                 "customers": customers,
                 "invoices": invoices,
                 "events": events,
-                "router_configs": router_configs,
                 "stats": collect_dashboard_metrics(session),
             },
         )
@@ -69,10 +38,6 @@ def build_web_router(get_session, templates: Jinja2Templates) -> APIRouter:
         monthly_rate: float = Form(...),
         due_day: int = Form(...),
         email: str = Form(...),
-        has_router: bool = Form(False),
-        router_identity: str = Form(""),
-        wan_interface: str = Form("ether1"),
-        lan_interface: str = Form("ether2"),
         session: Session = Depends(get_session),
     ):
         customer = Customer(
@@ -81,30 +46,10 @@ def build_web_router(get_session, templates: Jinja2Templates) -> APIRouter:
             monthly_rate=monthly_rate,
             due_day=due_day,
             email=email,
-            has_router=has_router,
-            router_identity=router_identity or None,
-            wan_interface=wan_interface,
-            lan_interface=lan_interface,
         )
         session.add(customer)
         session.commit()
-        session.refresh(customer)
-
-        if customer.has_router:
-            _ensure_router_provision(session, customer)
-
         return RedirectResponse(url="/", status_code=303)
-
-    @router.get("/customers/{customer_id}/router-config", response_class=PlainTextResponse)
-    def download_router_config(customer_id: int, session: Session = Depends(get_session)):
-        customer = session.get(Customer, customer_id)
-        if not customer:
-            raise HTTPException(status_code=404, detail="Customer not found")
-        if not customer.has_router:
-            raise HTTPException(status_code=400, detail="Customer has no router enabled")
-
-        provision = _ensure_router_provision(session, customer)
-        return provision.script
 
     @router.post("/customers/{customer_id}/toggle")
     def toggle_customer_status(customer_id: int, session: Session = Depends(get_session)):
