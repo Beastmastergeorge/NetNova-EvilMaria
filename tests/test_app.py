@@ -25,6 +25,7 @@ def test_dashboard_loads(tmp_path: Path):
     response = client.get("/")
     assert response.status_code == 200
     assert "NetNova" in response.text
+    assert "NetNova ISP Billing" in response.text
     assert "EVIL MARIA" in response.text
 
 
@@ -62,6 +63,12 @@ def test_api_customer_invoice_and_event_flow(tmp_path: Path):
     invoice_update = client.patch(f"/api/invoices/{invoice_id}", json={"status": "paid"})
     assert invoice_update.status_code == 200
     assert invoice_update.json()["status"] == "paid"
+
+    invoice_response = client.post(
+        "/api/invoices",
+        json={"customer_id": 1, "billing_month": "2026-01", "amount": 249.99},
+    )
+    assert invoice_response.status_code == 201
 
     event_response = client.post(
         "/api/events",

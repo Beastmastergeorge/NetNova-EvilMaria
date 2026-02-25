@@ -1,0 +1,161 @@
+:root {
+  color-scheme: dark;
+  --bg: #0e1626;
+  --card: #17253d;
+  --card-alt: #1c2f4e;
+  --text: #f4f8ff;
+  --muted: #9eb2d4;
+  --accent: #56b6ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  background: radial-gradient(circle at top, #1a2d4d, var(--bg));
+  color: var(--text);
+}
+
+header {
+  padding: 2rem;
+  border-bottom: 1px solid #2a3d63;
+}
+
+header h1 {
+  margin: 0 0 0.5rem;
+}
+
+header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+main {
+  padding: 1.5rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.stats article {
+  background: var(--card);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #2b426a;
+}
+
+.stats p {
+  font-size: 1.4rem;
+  margin: 0.3rem 0 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.panel {
+  background: var(--card-alt);
+  border: 1px solid #35507f;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+form {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+input,
+select,
+textarea,
+button {
+  width: 100%;
+  border: 1px solid #3d5a8e;
+  border-radius: 8px;
+  padding: 0.6rem;
+  background: #11203a;
+  color: var(--text);
+}
+
+button {
+  background: linear-gradient(90deg, #2476dc, #1b9cff);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+ul {
+  margin: 0;
+  padding-left: 1rem;
+  color: var(--muted);
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
+
+.flash-wrap {
+  margin: 1rem 1.5rem 0;
+}
+
+.flash {
+  background: #173f2f;
+  color: #c9ffd8;
+  padding: 0.7rem;
+  border: 1px solid #2f7e57;
+  border-radius: 8px;
+}
+
+.pill {
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.pill.healthy {
+  background: #0f4a2f;
+  color: #9effb8;
+}
+
+.pill.degraded {
+  background: #4a420f;
+  color: #ffe894;
+}
+
+.pill.critical {
+  background: #4a1313;
+  color: #ffb0b0;
+}
+
+.inline {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toggle input {
+  width: auto;
+}
+
+@media (max-width: 900px) {
+  .stats,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

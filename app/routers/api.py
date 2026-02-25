@@ -16,6 +16,7 @@ from app.schemas import (
     MonitoringEventCreate,
     MonitoringEventOut,
 )
+from app.schemas import CustomerCreate, InvoiceCreate, MonitoringEventCreate, MonitoringEventOut
 from app.services.metrics import collect_dashboard_metrics
 
 
@@ -35,6 +36,7 @@ def build_api_router(get_session) -> APIRouter:
         return session.exec(select(Customer).order_by(Customer.created_at.desc())).all()
 
     @router.post("/customers", response_model=CustomerOut, status_code=201)
+    @router.post("/customers", status_code=201)
     def create_customer(payload: CustomerCreate, session: Session = Depends(get_session)):
         customer = Customer(**payload.model_dump())
         session.add(customer)
@@ -63,6 +65,7 @@ def build_api_router(get_session) -> APIRouter:
         return session.exec(statement).all()
 
     @router.post("/invoices", response_model=InvoiceOut, status_code=201)
+    @router.post("/invoices", status_code=201)
     def create_invoice(payload: InvoiceCreate, session: Session = Depends(get_session)):
         customer = session.get(Customer, payload.customer_id)
         if not customer:
