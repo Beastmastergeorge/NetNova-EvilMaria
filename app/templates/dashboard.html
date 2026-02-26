@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NET NOVA ISP BILLING</title>
+    <title>NetNova + EVIL MARIA</title>
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
     <header>
       <div>
         <p class="eyebrow">ISP Billing + Monitoring Platform</p>
-        <h1>NET NOVA ISP BILLING</h1>
+        <h1>NetNova</h1>
         <h2>EVIL MARIA Operations Console</h2>
       </div>
       <div class="header-actions">
@@ -23,6 +23,16 @@
       <article><h3>Customers</h3><p id="stat-customers">{{ stats.customer_count }}</p></article>
       <article><h3>MRR</h3><p id="stat-mrr">${{ '%.2f'|format(stats.mrr) }}</p></article>
       <article><h3>Open Receivables</h3><p id="stat-unpaid">${{ '%.2f'|format(stats.unpaid) }}</p></article>
+        <h1>NetNova ISP Billing</h1>
+        <h2>EVIL MARIA Monitoring & Notification Console</h2>
+      </div>
+      <a class="api-link" href="/docs" target="_blank" rel="noreferrer">API Docs</a>
+    </header>
+
+    <section class="stats">
+      <article><h3>Customers</h3><p>{{ stats.customer_count }}</p></article>
+      <article><h3>Monthly Recurring Revenue</h3><p>${{ '%.2f'|format(stats.mrr) }}</p></article>
+      <article><h3>Unpaid Balance</h3><p>${{ '%.2f'|format(stats.unpaid) }}</p></article>
       <article class="critical"><h3>Critical Alerts</h3><p id="critical-count">{{ stats.critical_count }}</p></article>
     </section>
 
