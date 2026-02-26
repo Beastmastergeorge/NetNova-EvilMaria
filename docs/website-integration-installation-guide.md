@@ -1,6 +1,6 @@
-# NetNova + EVIL MARIA Website Integration Installation Guide
+# NET NOVA ISP BILLING Website Integration Installation Guide
 
-This guide explains how to install and integrate the NetNova Billing + EVIL MARIA platform into your website and operations environment.
+This guide explains how to install and integrate the NET NOVA ISP BILLING platform into your website and operations environment.
 
 ## 1) Integration goals
 
@@ -14,7 +14,7 @@ You can integrate this project in three common ways:
 
 - Linux server or VM (Ubuntu 22.04+ recommended)
 - Docker and Docker Compose plugin installed (recommended deployment path)
-- DNS name for your deployment (example: `ops.yourdomain.com`)
+- DNS name for your deployment (for this project: `netnovabilling.ambertelecoms.co.ke`)
 - Reverse proxy / TLS termination (Nginx, Traefik, or cloud load balancer)
 - Python 3.10+ (only needed for non-Docker runtime)
 
@@ -49,28 +49,34 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 ## 4) Configure environment for website integration
 
-Edit `.env` and set at minimum:
+Edit `.env` and set for your live deployment:
 
 ```env
-APP_NAME="NetNova Billing + EVIL MARIA"
+APP_NAME="NET NOVA ISP BILLING"
 ENVIRONMENT="production"
 DEBUG="false"
 HOST="0.0.0.0"
 PORT="8000"
-DATABASE_URL="sqlite:///./netnova.db"
-ALLOWED_ORIGINS="https://www.yourdomain.com,https://ops.yourdomain.com"
+PUBLIC_BASE_URL="https://netnovabilling.ambertelecoms.co.ke"
+ALLOWED_ORIGINS="https://netnovabilling.ambertelecoms.co.ke"
+DB_DRIVER="mysql+pymysql"
+DB_HOST="localhost"
+DB_PORT="3306"
+DB_NAME="ambertel_netnovabilling"
+DB_USER="ambertel_netnovabilling"
+DB_PASSWORD="Faith!@#"
 ```
 
-> For production, migrate from SQLite to PostgreSQL and set `DATABASE_URL` accordingly.
+If `DATABASE_URL` is not set, the app automatically composes it from `DB_*` values.
 
 ## 5) Reverse proxy and TLS
 
-Place NetNova behind HTTPS. Example Nginx upstream:
+Place NET NOVA ISP BILLING behind HTTPS. Example Nginx upstream:
 
 ```nginx
 server {
   listen 443 ssl;
-  server_name ops.yourdomain.com;
+  server_name netnovabilling.ambertelecoms.co.ke;
 
   location / {
     proxy_pass http://127.0.0.1:8000;
@@ -88,12 +94,12 @@ server {
 
 From your website admin/ops area, link directly to:
 
-- Dashboard UI: `https://ops.yourdomain.com/`
-- API docs: `https://ops.yourdomain.com/docs`
+- Dashboard UI: `https://netnovabilling.ambertelecoms.co.ke/`
+- API docs: `https://netnovabilling.ambertelecoms.co.ke/docs`
 
 ### Pattern B: Server-to-server API integration
 
-Use your website backend to call NetNova APIs:
+Use your website backend to call NET NOVA ISP BILLING APIs:
 
 - `POST /api/customers` to create customer records
 - `POST /api/invoices` to generate billing entries
@@ -103,7 +109,7 @@ Use your website backend to call NetNova APIs:
 #### Example create customer with router enabled
 
 ```bash
-curl -X POST https://ops.yourdomain.com/api/customers \
+curl -X POST https://netnovabilling.ambertelecoms.co.ke/api/customers \
   -H 'Content-Type: application/json' \
   -d '{
     "name": "North District Fiber",
@@ -121,7 +127,7 @@ curl -X POST https://ops.yourdomain.com/api/customers \
 #### Example get generated MikroTik script
 
 ```bash
-curl https://ops.yourdomain.com/api/customers/1/router-config
+curl https://netnovabilling.ambertelecoms.co.ke/api/customers/1/router-config
 ```
 
 ### Pattern C: Embedded iframe (internal-only)
@@ -130,8 +136,8 @@ If needed for internal tools:
 
 ```html
 <iframe
-  src="https://ops.yourdomain.com/"
-  title="NetNova EVIL MARIA"
+  src="https://netnovabilling.ambertelecoms.co.ke/"
+  title="NET NOVA ISP BILLING EVIL MARIA"
   width="100%"
   height="900"
   style="border:0;"
@@ -144,7 +150,7 @@ If needed for internal tools:
 
 1. Website captures onboarding details.
 2. Website backend calls `POST /api/customers` with `has_router=true`.
-3. NetNova auto-assigns a `/30` transit IP block and generates MikroTik script.
+3. NET NOVA ISP BILLING auto-assigns a `/30` transit IP block and generates MikroTik script.
 4. Website/NOC fetches script via `GET /api/customers/{id}/router-config`.
 5. NOC pastes script into RouterOS terminal on the customer router.
 
@@ -180,6 +186,20 @@ docker compose up --build -d
 Run smoke checks after deploy:
 
 ```bash
-curl https://ops.yourdomain.com/api/health
-curl https://ops.yourdomain.com/api/metrics
+curl https://netnovabilling.ambertelecoms.co.ke/api/health
+curl https://netnovabilling.ambertelecoms.co.ke/api/metrics
 ```
+
+
+## 11) Browser-opened installer file (optional)
+
+If your hosting workflow needs an installer file that runs when opened in a browser:
+
+1. Keep `website-installer.php` and `scripts/website_install.sh` on the server.
+2. Set `NETNOVA_INSTALL_SECRET` in PHP/web-server environment.
+3. Open `https://netnovabilling.ambertelecoms.co.ke/website-installer.php`.
+4. Enter the secret and click install.
+
+The PHP file executes `scripts/website_install.sh`, which deploys the app and prints Nginx config guidance.
+
+> Important: remove `website-installer.php` after successful installation.

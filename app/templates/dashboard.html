@@ -37,60 +37,97 @@
     </section>
 
     <main>
-      <section>
-        <h3>Provision Customer</h3>
-        <form method="post" action="/customers" class="form-grid">
-          <input name="name" placeholder="Customer Name" required />
-          <input name="plan_name" placeholder="Plan Name" required />
-          <input type="number" step="0.01" min="0" name="monthly_rate" placeholder="Monthly Rate" required />
-        <h3>Add Customer</h3>
-        <form method="post" action="/customers" class="form-grid">
-          <input name="name" placeholder="Customer Name" required />
-          <input name="plan_name" placeholder="Plan Name" required />
-          <input type="number" step="0.01" name="monthly_rate" placeholder="Monthly Rate" required />
-          <input type="number" min="1" max="31" name="due_day" placeholder="Due Day" required />
-          <input type="email" name="email" placeholder="Email" required />
-          <button type="submit">Create Customer</button>
-        </form>
-      </section>
+      <section class="section-wide">
+        <h3>Operations Workbench</h3>
+        <div class="tab-actions" role="tablist" aria-label="Operations tabs">
+          <button type="button" class="tab-button is-active" data-tab-target="tab-customer">Provision Customer</button>
+          <button type="button" class="tab-button" data-tab-target="tab-package">Create Package Templates</button>
+          <button type="button" class="tab-button" data-tab-target="tab-invoice">Generate Invoice</button>
+          <button type="button" class="tab-button" data-tab-target="tab-alert">Push EVIL MARIA Alert</button>
+        </div>
 
-      <section>
-        <h3>Generate Invoice</h3>
-        <h3>Create Invoice</h3>
-        <form method="post" action="/invoices" class="form-grid">
-          <select name="customer_id" required>
-            <option value="">Choose customer</option>
-            {% for customer in customers %}
-            <option value="{{ customer.id }}">{{ customer.name }} ({{ customer.plan_name }})</option>
-            {% endfor %}
-          </select>
-          <input name="billing_month" placeholder="YYYY-MM" required />
-          <input type="number" step="0.01" min="0" name="amount" placeholder="Amount" required />
-          <input type="number" step="0.01" name="amount" placeholder="Amount" required />
-          <button type="submit">Generate Invoice</button>
-        </form>
-      </section>
+        <div class="tab-panels">
+          <article class="tab-panel is-active" id="tab-customer">
+            <form method="post" action="/customers" class="form-grid" id="customer-form">
+              <input name="name" placeholder="Customer Name" required />
+              <input name="plan_name" placeholder="Plan Name" required data-package-plan />
+              <input type="number" step="0.01" min="0" name="monthly_rate" placeholder="Monthly Rate" required data-package-rate />
+              <input type="number" min="1" max="31" name="due_day" placeholder="Due Day" required data-package-due-day />
+              <input type="email" name="email" placeholder="Email" required />
+              <label class="inline-checkbox"><input type="checkbox" name="has_router" value="true" /> Customer has MikroTik router</label>
+              <input name="router_identity" placeholder="Router identity (optional)" />
+              <div class="two-cols">
+                <input name="wan_interface" placeholder="WAN interface" value="ether1" />
+                <input name="lan_interface" placeholder="LAN interface" value="ether2" />
+              </div>
+              <button type="submit">Create Customer</button>
+            </form>
+          </article>
 
-      <section>
-        <h3>Push EVIL MARIA Alert</h3>
-        <h3>Log EVIL MARIA Event</h3>
-        <form method="post" action="/events" class="form-grid">
-          <input name="service_name" placeholder="Service / Node" required />
-          <select name="severity" required>
-            <option value="info">Info</option>
-            <option value="warning">Warning</option>
-            <option value="critical">Critical</option>
-          </select>
-          <input name="message" placeholder="Notification message" required />
-          <button type="submit">Push Alert</button>
-        </form>
+          <article class="tab-panel" id="tab-package">
+            <p class="tab-intro">Build package templates with a new card layout, then apply any template directly to customer onboarding.</p>
+            <div class="package-template-grid" id="package-template-grid">
+              <article class="package-card">
+                <span class="package-tag">Starter</span>
+                <h4>Home 30M</h4>
+                <p>KES 1,999 / month · Due day 5</p>
+                <button type="button" class="apply-package" data-package-name="Home 30M" data-package-rate="1999" data-package-due-day="5">Apply to customer form</button>
+              </article>
+              <article class="package-card">
+                <span class="package-tag">Business</span>
+                <h4>SMB 120M</h4>
+                <p>KES 6,499 / month · Due day 10</p>
+                <button type="button" class="apply-package" data-package-name="SMB 120M" data-package-rate="6499" data-package-due-day="10">Apply to customer form</button>
+              </article>
+              <article class="package-card">
+                <span class="package-tag">Enterprise</span>
+                <h4>Dedicated 500M</h4>
+                <p>KES 24,999 / month · Due day 15</p>
+                <button type="button" class="apply-package" data-package-name="Dedicated 500M" data-package-rate="24999" data-package-due-day="15">Apply to customer form</button>
+              </article>
+            </div>
+            <form id="package-template-form" class="form-grid package-form">
+              <input name="package_name" placeholder="Template name" required />
+              <input type="number" min="0" step="0.01" name="package_rate" placeholder="Monthly rate" required />
+              <input type="number" min="1" max="31" name="package_due_day" placeholder="Due day" required />
+              <button type="submit">Add Template</button>
+            </form>
+          </article>
+
+          <article class="tab-panel" id="tab-invoice">
+            <form method="post" action="/invoices" class="form-grid">
+              <select name="customer_id" required>
+                <option value="">Choose customer</option>
+                {% for customer in customers %}
+                <option value="{{ customer.id }}">{{ customer.name }} ({{ customer.plan_name }})</option>
+                {% endfor %}
+              </select>
+              <input name="billing_month" placeholder="YYYY-MM" required />
+              <input type="number" step="0.01" min="0" name="amount" placeholder="Amount" required />
+              <button type="submit">Generate Invoice</button>
+            </form>
+          </article>
+
+          <article class="tab-panel" id="tab-alert">
+            <form method="post" action="/events" class="form-grid">
+              <input name="service_name" placeholder="Service / Node" required />
+              <select name="severity" required>
+                <option value="info">Info</option>
+                <option value="warning">Warning</option>
+                <option value="critical">Critical</option>
+              </select>
+              <input name="message" placeholder="Notification message" required />
+              <button type="submit">Push Alert</button>
+            </form>
+          </article>
+        </div>
       </section>
 
       <section>
         <h3>Customers</h3>
         <table>
           <thead>
-            <tr><th>ID</th><th>Name</th><th>Plan</th><th>Rate</th><th>Status</th><th>Action</th></tr>
+            <tr><th>ID</th><th>Name</th><th>Plan</th><th>Rate</th><th>Status</th><th>Router</th><th>Action</th></tr>
           </thead>
           <tbody>
             {% for customer in customers %}
@@ -101,12 +138,37 @@
               <td>${{ '%.2f'|format(customer.monthly_rate) }}</td>
               <td>{{ 'active' if customer.active else 'suspended' }}</td>
               <td>
+                {% if customer.has_router %}
+                  <a href="/customers/{{ customer.id }}/router-config" target="_blank">Script</a>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td>
                 <form method="post" action="/customers/{{ customer.id }}/toggle">
                   <button type="submit">{{ 'Suspend' if customer.active else 'Reactivate' }}</button>
                 </form>
               </td>
             </tr>
-            {% else %}<tr><td colspan="6">No customers yet.</td></tr>{% endfor %}
+            {% else %}<tr><td colspan="7">No customers yet.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h3>MikroTik Auto Provisioning</h3>
+        <table>
+          <thead><tr><th>Customer ID</th><th>Subnet</th><th>Gateway</th><th>Customer IP</th><th>Script</th></tr></thead>
+          <tbody>
+            {% for config in router_configs %}
+            <tr>
+              <td>{{ config.customer_id }}</td>
+              <td>{{ config.subnet_cidr }}</td>
+              <td>{{ config.gateway_ip }}</td>
+              <td>{{ config.customer_ip }}</td>
+              <td><details><summary>View</summary><pre>{{ config.script }}</pre></details></td>
+            </tr>
+            {% else %}<tr><td colspan="5">No router configs yet.</td></tr>{% endfor %}
           </tbody>
         </table>
       </section>
@@ -138,8 +200,6 @@
 
       <section>
         <h3>EVIL MARIA Alert Feed</h3>
-        <h3>EVIL MARIA Alerts</h3>
-        <button type="button" id="toggle-speech">Enable speech notifications</button>
         <ul id="alerts-list">
           {% for event in events %}
           <li class="severity-{{ event.severity }} {% if event.acknowledged %}acknowledged{% endif %}" data-id="{{ event.id }}" data-severity="{{ event.severity }}" data-message="{{ event.message }}">
