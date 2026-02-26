@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export APP_NAME=${APP_NAME:-"NET NOVA ISP BILLING"}
+export APP_NAME=${APP_NAME:-"NetNova Billing + EVIL MARIA"}
 export ENVIRONMENT=${ENVIRONMENT:-"production"}
 export DEBUG=${DEBUG:-"false"}
 export HOST=${HOST:-"0.0.0.0"}
