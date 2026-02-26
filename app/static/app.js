@@ -64,6 +64,17 @@ async function pollApi() {
       if (hasNewCritical) {
         window.location.reload();
       }
+async function pollUnacknowledgedEvents() {
+  try {
+    const response = await fetch("/api/events?unacknowledged_only=true", { headers: { Accept: "application/json" } });
+    if (!response.ok) {
+      return;
+    }
+    const events = await response.json();
+
+    const hasNewCritical = events.some((event) => event.severity === "critical" && !announcedEventIds.has(event.id));
+    if (hasNewCritical) {
+      window.location.reload();
     }
   } catch (error) {
     console.debug("EVIL MARIA poll failed", error);
@@ -73,6 +84,7 @@ async function pollApi() {
 if (alertsList) {
   announceCriticalAlertsFromDom();
   setInterval(pollApi, 15000);
+  setInterval(pollUnacknowledgedEvents, 15000);
 }
 
 if (toggleButton) {

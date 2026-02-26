@@ -91,6 +91,18 @@
             {% else %}<tr><td colspan="6">No payment gateways linked.</td></tr>{% endfor %}
           </tbody>
         </table>
+      <section>
+        <h3>Payment Gateways</h3>
+        <form method="post" action="/client/payment-gateways" class="form-grid">
+          <input name="gateway_name" placeholder="Gateway name (M-Pesa/Stripe/etc)" required />
+          <input name="account_ref" placeholder="Account reference" required />
+          <button type="submit">Add Gateway</button>
+        </form>
+        <ul>
+          {% for gateway in gateways %}
+          <li>{{ gateway.gateway_name }} - {{ gateway.account_ref }}</li>
+          {% else %}<li>No payment gateways linked.</li>{% endfor %}
+        </ul>
       </section>
 
       <section>
@@ -118,6 +130,9 @@
           </select>
           <input name="reference" placeholder="Reference" required />
           <button type="submit">Record Payment</button>
+          <input name="method" placeholder="Method" required />
+          <input name="reference" placeholder="Reference" required />
+          <button type="submit">Add Transaction</button>
         </form>
         <table>
           <thead><tr><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th></tr></thead>

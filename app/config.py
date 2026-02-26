@@ -8,6 +8,7 @@ from urllib.parse import quote_plus
 @dataclass(frozen=True)
 class Settings:
     app_name: str = "NET NOVA ISP BILLING"
+    app_name: str = "NetNova Billing + EVIL MARIA"
     environment: str = "development"
     debug: bool = False
     host: str = "0.0.0.0"
@@ -40,6 +41,8 @@ class Settings:
     @classmethod
     def from_env(cls) -> "Settings":
         database_url = os.getenv("DATABASE_URL") or cls._database_url_from_parts() or cls.database_url
+    @classmethod
+    def from_env(cls) -> "Settings":
         return cls(
             app_name=os.getenv("APP_NAME", cls.app_name),
             environment=os.getenv("ENVIRONMENT", cls.environment),
@@ -49,4 +52,6 @@ class Settings:
             database_url=database_url,
             allowed_origins=os.getenv("ALLOWED_ORIGINS", cls.allowed_origins),
             public_base_url=os.getenv("PUBLIC_BASE_URL", cls.public_base_url),
+            database_url=os.getenv("DATABASE_URL", cls.database_url),
+            allowed_origins=os.getenv("ALLOWED_ORIGINS", cls.allowed_origins),
         )

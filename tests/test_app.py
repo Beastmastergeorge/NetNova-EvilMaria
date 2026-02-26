@@ -76,6 +76,9 @@ def test_admin_and_client_portal_flow(tmp_path: Path):
     assert portal.status_code == 200
     assert "Download Auto-Generated Router Script" in portal.text
     assert "M-Pesa Daraja" in portal.text
+    portal = client.get("/client/portal")
+    assert portal.status_code == 200
+    assert "Download Auto-Generated Router Script" in portal.text
 
     script = client.get("/client/router-script")
     assert script.status_code == 200
