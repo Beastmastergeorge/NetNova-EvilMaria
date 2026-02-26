@@ -58,6 +58,24 @@ def test_admin_and_client_portal_flow(tmp_path: Path):
     assert client_login.status_code == 303
     assert client_login.headers["location"] == "/client/portal"
 
+    enable_gateway = client.post(
+        "/client/payment-gateways/quick-add",
+        data={"provider": "mpesa"},
+        follow_redirects=False,
+    )
+    assert enable_gateway.status_code == 303
+
+    payment = client.post(
+        "/client/transactions",
+        data={"amount": "1499", "method": "M-Pesa Daraja", "reference": "MPESA-TEST-001"},
+        follow_redirects=False,
+    )
+    assert payment.status_code == 303
+
+    portal = client.get("/client/portal")
+    assert portal.status_code == 200
+    assert "Download Auto-Generated Router Script" in portal.text
+    assert "M-Pesa Daraja" in portal.text
     portal = client.get("/client/portal")
     assert portal.status_code == 200
     assert "Download Auto-Generated Router Script" in portal.text

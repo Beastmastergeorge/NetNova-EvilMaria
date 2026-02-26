@@ -81,6 +81,7 @@ header h2 {
 
 main {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
   grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   gap: 1rem;
@@ -97,6 +98,19 @@ section {
 .form-grid {
   display: grid;
   gap: 0.5rem;
+}
+
+.two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.inline-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
 }
 
 input,
@@ -116,6 +130,10 @@ button {
   font-weight: bold;
 }
 
+a {
+  color: #7dd3fc;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -127,6 +145,15 @@ th {
   padding: 0.45rem;
   text-align: left;
   font-size: 0.93rem;
+  vertical-align: top;
+}
+
+pre {
+  white-space: pre-wrap;
+  background: #020617;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 0.5rem;
   padding: 0.4rem;
   text-align: left;
 }
@@ -164,4 +191,101 @@ th {
 .inline-form {
   display: inline;
   margin-left: 0.5rem;
+}
+
+.section-wide {
+  grid-column: 1 / -1;
+}
+
+.tab-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.8rem;
+}
+
+.tab-button {
+  background: #1d4ed8;
+  color: #e2e8f0;
+}
+
+.tab-button.is-active {
+  background: #22c55e;
+  color: #052e16;
+}
+
+.tab-panels .tab-panel {
+  display: none;
+}
+
+.tab-panels .tab-panel.is-active {
+  display: block;
+}
+
+.tab-intro {
+  margin-top: 0;
+  color: #cbd5e1;
+}
+
+.package-template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.7rem;
+  margin-bottom: 0.8rem;
+}
+
+.package-card {
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 0.8rem;
+  background: linear-gradient(160deg, #0f172a 0%, #111827 100%);
+}
+
+.package-card h4 {
+  margin: 0.35rem 0;
+}
+
+.package-tag {
+  display: inline-block;
+  background: #0ea5e9;
+  color: #03202f;
+  font-size: 0.72rem;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  font-weight: 700;
+}
+
+.package-form {
+  border-top: 1px solid #334155;
+  padding-top: 0.8rem;
+}
+
+.gateway-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.gateway-card {
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 0.9rem;
+  background: #0f172a;
+}
+
+.gateway-card h4 {
+  margin: 0 0 0.4rem;
+}
+
+.gateway-card.stripe {
+  border-left: 4px solid #635bff;
+}
+
+.gateway-card.mpesa {
+  border-left: 4px solid #22c55e;
+}
+
+.gateway-card.kopokopo {
+  border-left: 4px solid #f59e0b;
 }

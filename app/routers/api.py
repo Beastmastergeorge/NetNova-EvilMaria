@@ -5,6 +5,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
+from app.models import Customer, Invoice, MonitoringEvent, RouterProvision
 from app.models import Customer, Invoice, MonitoringEvent
 from app.schemas import (
     CustomerCreate,
@@ -15,6 +16,39 @@ from app.schemas import (
     InvoiceUpdate,
     MonitoringEventCreate,
     MonitoringEventOut,
+    RouterProvisionOut,
+)
+from app.services.metrics import collect_dashboard_metrics
+from app.services.mikrotik import assign_point_to_point_block, build_mikrotik_script
+
+
+def _ensure_router_provision(session: Session, customer: Customer) -> RouterProvision:
+    existing = session.exec(select(RouterProvision).where(RouterProvision.customer_id == customer.id)).first()
+    if existing:
+        return existing
+
+    assignment = assign_point_to_point_block(customer.id)
+    identity = customer.router_identity or f"NetNova-CPE-{customer.id}"
+    script = build_mikrotik_script(
+        customer_name=customer.name,
+        router_identity=identity,
+        wan_interface=customer.wan_interface,
+        lan_interface=customer.lan_interface,
+        gateway_ip=assignment.gateway_ip,
+        customer_ip=assignment.customer_ip,
+    )
+
+    provision = RouterProvision(
+        customer_id=customer.id,
+        subnet_cidr=assignment.subnet_cidr,
+        gateway_ip=assignment.gateway_ip,
+        customer_ip=assignment.customer_ip,
+        script=script,
+    )
+    session.add(provision)
+    session.commit()
+    session.refresh(provision)
+    return provision
 )
 from app.schemas import CustomerCreate, InvoiceCreate, MonitoringEventCreate, MonitoringEventOut
 from app.services.metrics import collect_dashboard_metrics
@@ -42,6 +76,8 @@ def build_api_router(get_session) -> APIRouter:
         session.add(customer)
         session.commit()
         session.refresh(customer)
+        if customer.has_router:
+            _ensure_router_provision(session, customer)
         return customer
 
     @router.patch("/customers/{customer_id}", response_model=CustomerOut)
@@ -56,6 +92,15 @@ def build_api_router(get_session) -> APIRouter:
         session.commit()
         session.refresh(customer)
         return customer
+
+    @router.get("/customers/{customer_id}/router-config", response_model=RouterProvisionOut)
+    def get_router_config(customer_id: int, session: Session = Depends(get_session)):
+        customer = session.get(Customer, customer_id)
+        if not customer:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        if not customer.has_router:
+            raise HTTPException(status_code=400, detail="Customer has no router enabled")
+        return _ensure_router_provision(session, customer)
 
     @router.get("/invoices", response_model=list[InvoiceOut])
     def list_invoices(status: str | None = None, session: Session = Depends(get_session)):

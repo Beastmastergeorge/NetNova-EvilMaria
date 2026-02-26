@@ -203,3 +203,13 @@ If your hosting workflow needs an installer file that runs when opened in a brow
 The PHP file executes `scripts/website_install.sh`, which deploys the app and prints Nginx config guidance.
 
 > Important: remove `website-installer.php` after successful installation.
+
+
+## 12) Payment gateway integration UI (Stripe, M-Pesa, KopoKopo)
+
+In the client portal (`/client/portal`), use **Major Payment Gateway Integration** cards to quickly enable:
+- Stripe
+- M-Pesa (Daraja)
+- KopoKopo
+
+You can also add custom credentials (public key/shortcode and callback URL) in the gateway form, then record payments from enabled gateways in the Transactions panel.
