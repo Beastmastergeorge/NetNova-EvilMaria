@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Client Portal</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <p class="eyebrow">Client Self-Service</p>
+        <h1>{{ customer.name }} Portal</h1>
+      </div>
+      <form method="post" action="/logout"><button type="submit">Logout</button></form>
+    </header>
+
+    <main>
+      <section>
+        <h3>Account & Package Management</h3>
+        <form method="post" action="/client/profile" class="form-grid">
+          <input name="email" type="email" value="{{ customer.email }}" required />
+          <input name="plan_name" value="{{ customer.plan_name }}" required />
+          <input name="monthly_rate" type="number" step="0.01" min="0" value="{{ customer.monthly_rate }}" required />
+          <input name="due_day" type="number" min="1" max="31" value="{{ customer.due_day }}" required />
+          <button type="submit">Update Account</button>
+        </form>
+      </section>
+
+      <section>
+        <h3>Payment Gateways</h3>
+        <form method="post" action="/client/payment-gateways" class="form-grid">
+          <input name="gateway_name" placeholder="Gateway name (M-Pesa/Stripe/etc)" required />
+          <input name="account_ref" placeholder="Account reference" required />
+          <button type="submit">Add Gateway</button>
+        </form>
+        <ul>
+          {% for gateway in gateways %}
+          <li>{{ gateway.gateway_name }} - {{ gateway.account_ref }}</li>
+          {% else %}<li>No payment gateways linked.</li>{% endfor %}
+        </ul>
+      </section>
+
+      <section>
+        <h3>Router Management</h3>
+        <form method="post" action="/client/routers" class="form-grid">
+          <input name="router_identity" value="{{ customer.router_identity or '' }}" placeholder="Router identity" required />
+          <div class="two-cols">
+            <input name="wan_interface" value="{{ customer.wan_interface }}" placeholder="WAN interface" />
+            <input name="lan_interface" value="{{ customer.lan_interface }}" placeholder="LAN interface" />
+          </div>
+          <button type="submit">Save Router</button>
+        </form>
+        {% if customer.has_router %}<a href="/client/router-script" target="_blank">Download Auto-Generated Router Script</a>{% endif %}
+      </section>
+
+      <section>
+        <h3>Transactions</h3>
+        <form method="post" action="/client/transactions" class="form-grid">
+          <input name="amount" type="number" step="0.01" min="0" placeholder="Amount" required />
+          <input name="method" placeholder="Method" required />
+          <input name="reference" placeholder="Reference" required />
+          <button type="submit">Add Transaction</button>
+        </form>
+        <table>
+          <thead><tr><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for tx in transactions %}
+            <tr><td>{{ tx.amount }}</td><td>{{ tx.method }}</td><td>{{ tx.reference }}</td><td>{{ tx.status }}</td></tr>
+            {% else %}<tr><td colspan="4">No transactions yet.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </body>
+</html>
