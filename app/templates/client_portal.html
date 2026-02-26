@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Client Portal</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <p class="eyebrow">Client Self-Service</p>
+        <h1>{{ customer.name }} Portal</h1>
+      </div>
+      <form method="post" action="/logout"><button type="submit">Logout</button></form>
+    </header>
+
+    <main>
+      <section>
+        <h3>Account & Package Management</h3>
+        <form method="post" action="/client/profile" class="form-grid">
+          <input name="email" type="email" value="{{ customer.email }}" required />
+          <input name="plan_name" value="{{ customer.plan_name }}" required />
+          <input name="monthly_rate" type="number" step="0.01" min="0" value="{{ customer.monthly_rate }}" required />
+          <input name="due_day" type="number" min="1" max="31" value="{{ customer.due_day }}" required />
+          <button type="submit">Update Account</button>
+        </form>
+      </section>
+
+      <section class="section-wide">
+        <h3>Major Payment Gateway Integration</h3>
+        <p class="tab-intro">Enable Stripe, M-Pesa, and KopoKopo using graphical cards, then add custom keys and callbacks.</p>
+
+        <div class="gateway-grid">
+          <article class="gateway-card stripe">
+            <h4>Stripe</h4>
+            <p>Cards, wallets, and recurring billing support.</p>
+            <form method="post" action="/client/payment-gateways/quick-add">
+              <input type="hidden" name="provider" value="stripe" />
+              <button type="submit">Enable Stripe</button>
+            </form>
+          </article>
+          <article class="gateway-card mpesa">
+            <h4>M-Pesa</h4>
+            <p>STK Push and Paybill/Till integrations.</p>
+            <form method="post" action="/client/payment-gateways/quick-add">
+              <input type="hidden" name="provider" value="mpesa" />
+              <button type="submit">Enable M-Pesa</button>
+            </form>
+          </article>
+          <article class="gateway-card kopokopo">
+            <h4>KopoKopo</h4>
+            <p>Merchant collections and settlements.</p>
+            <form method="post" action="/client/payment-gateways/quick-add">
+              <input type="hidden" name="provider" value="kopokopo" />
+              <button type="submit">Enable KopoKopo</button>
+            </form>
+          </article>
+        </div>
+
+        <form method="post" action="/client/payment-gateways" class="form-grid">
+          <select name="provider" required>
+            <option value="custom">Custom</option>
+            <option value="stripe">Stripe</option>
+            <option value="mpesa">M-Pesa</option>
+            <option value="kopokopo">KopoKopo</option>
+          </select>
+          <input name="gateway_name" placeholder="Gateway display name" required />
+          <input name="account_ref" placeholder="Account reference / merchant id" required />
+          <input name="public_key" placeholder="Public key / shortcode (optional)" />
+          <input name="callback_url" placeholder="Callback URL (optional)" />
+          <button type="submit">Add Gateway Configuration</button>
+        </form>
+
+        <table>
+          <thead><tr><th>Gateway</th><th>Provider</th><th>Reference</th><th>Callback</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>
+            {% for gateway in gateways %}
+            <tr>
+              <td>{{ gateway.gateway_name }}</td>
+              <td>{{ gateway.provider }}</td>
+              <td>{{ gateway.account_ref }}</td>
+              <td>{{ gateway.callback_url or '—' }}</td>
+              <td>{{ 'active' if gateway.active else 'disabled' }}</td>
+              <td>
+                <form method="post" action="/client/payment-gateways/{{ gateway.id }}/toggle">
+                  <button type="submit">{{ 'Disable' if gateway.active else 'Enable' }}</button>
+                </form>
+              </td>
+            </tr>
+            {% else %}<tr><td colspan="6">No payment gateways linked.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h3>Router Management</h3>
+        <form method="post" action="/client/routers" class="form-grid">
+          <input name="router_identity" value="{{ customer.router_identity or '' }}" placeholder="Router identity" required />
+          <div class="two-cols">
+            <input name="wan_interface" value="{{ customer.wan_interface }}" placeholder="WAN interface" />
+            <input name="lan_interface" value="{{ customer.lan_interface }}" placeholder="LAN interface" />
+          </div>
+          <button type="submit">Save Router</button>
+        </form>
+        {% if customer.has_router %}<a href="/client/router-script" target="_blank">Download Auto-Generated Router Script</a>{% endif %}
+      </section>
+
+      <section>
+        <h3>Transactions</h3>
+        <form method="post" action="/client/transactions" class="form-grid">
+          <input name="amount" type="number" step="0.01" min="0" placeholder="Amount" required />
+          <select name="method" required>
+            <option value="">Select payment method</option>
+            {% for method in active_gateway_methods %}
+            <option value="{{ method }}">{{ method }}</option>
+            {% endfor %}
+          </select>
+          <input name="reference" placeholder="Reference" required />
+          <button type="submit">Record Payment</button>
+        </form>
+        <table>
+          <thead><tr><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for tx in transactions %}
+            <tr><td>{{ tx.amount }}</td><td>{{ tx.method }}</td><td>{{ tx.reference }}</td><td>{{ tx.status }}</td></tr>
+            {% else %}<tr><td colspan="4">No transactions yet.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </body>
+</html>

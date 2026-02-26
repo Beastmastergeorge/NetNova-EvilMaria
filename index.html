@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NET NOVA ISP BILLING</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Inter, Arial, sans-serif;
+      }
+      body {
+        margin: 0;
+        background: linear-gradient(170deg, #020617 0%, #0f172a 65%);
+        color: #e2e8f0;
+      }
+      .wrap {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem 1rem 3rem;
+      }
+      h1 {
+        margin-bottom: 0.2rem;
+        font-size: 2rem;
+      }
+      .subtitle {
+        margin-top: 0;
+        color: #94a3b8;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+        margin-top: 1.2rem;
+      }
+      .card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 1rem;
+      }
+      .card h3 { margin-top: 0; }
+      .links {
+        display: grid;
+        gap: 0.5rem;
+      }
+      a {
+        color: #7dd3fc;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      a:hover { text-decoration: underline; }
+      .cta {
+        display: inline-block;
+        margin-top: 0.9rem;
+        background: #22c55e;
+        color: #052e16;
+        padding: 0.6rem 0.8rem;
+        border-radius: 8px;
+      }
+      footer {
+        margin-top: 2rem;
+        font-size: 0.9rem;
+        color: #94a3b8;
+      }
+      code {
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        padding: 0.1rem 0.35rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>NET NOVA ISP BILLING</h1>
+      <p class="subtitle">
+        Unified billing, monitoring, notifications, and MikroTik provisioning platform for netnovabilling.ambertelecoms.co.ke.
+      </p>
+
+      <a class="cta" href="/">Open Operations Dashboard</a>
+
+      <section class="grid" aria-label="Project links">
+        <article class="card">
+          <h3>Operations (Live Domain)</h3>
+          <div class="links">
+            <a href="https://netnovabilling.ambertelecoms.co.ke/">Dashboard (NET NOVA ISP BILLING)</a>
+            <a href="https://netnovabilling.ambertelecoms.co.ke/docs">API Documentation (Swagger)</a>
+            <a href="https://netnovabilling.ambertelecoms.co.ke/api/health">Health Check</a>
+            <a href="https://netnovabilling.ambertelecoms.co.ke/api/metrics">Live Metrics</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Integration</h3>
+          <div class="links">
+            <a href="docs/website-integration-installation-guide.md">Website Integration Installation Guide</a>
+            <a href="README.md">Project README</a>
+            <a href="docker-compose.yml">Docker Compose Configuration</a>
+            <a href="website-installer.php">One-Click Website Installer</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>MikroTik Provisioning</h3>
+          <p>
+            Create customers with <code>has_router=true</code> to auto-assign transit IP blocks and generate router scripts.
+          </p>
+          <div class="links">
+            <a href="/api/customers">Customers API</a>
+            <a href="/api/events">Monitoring Events API</a>
+          </div>
+        </article>
+      </section>
+
+      <footer>
+        © NET NOVA ISP BILLING — EVIL MARIA NOC Console
+      </footer>
+    </main>
+  </body>
+</html>
