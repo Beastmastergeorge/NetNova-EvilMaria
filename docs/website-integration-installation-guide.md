@@ -14,7 +14,7 @@ You can integrate this project in three common ways:
 
 - Linux server or VM (Ubuntu 22.04+ recommended)
 - Docker and Docker Compose plugin installed (recommended deployment path)
-- DNS name for your deployment (for this project: `netnovabilling.ambertelecoms.co.ke`)
+- DNS name for your deployment (example: `ops.yourdomain.com`)
 - Reverse proxy / TLS termination (Nginx, Traefik, or cloud load balancer)
 - Python 3.10+ (only needed for non-Docker runtime)
 
@@ -49,7 +49,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 ## 4) Configure environment for website integration
 
-Edit `.env` and set for your live deployment:
+Edit `.env` and set at minimum:
 
 ```env
 APP_NAME="NetNova Billing + EVIL MARIA"
@@ -57,17 +57,11 @@ ENVIRONMENT="production"
 DEBUG="false"
 HOST="0.0.0.0"
 PORT="8000"
-PUBLIC_BASE_URL="https://netnovabilling.ambertelecoms.co.ke"
-ALLOWED_ORIGINS="https://netnovabilling.ambertelecoms.co.ke"
-DB_DRIVER="mysql+pymysql"
-DB_HOST="localhost"
-DB_PORT="3306"
-DB_NAME="ambertel_netnovabilling"
-DB_USER="ambertel_netnovabilling"
-DB_PASSWORD="Faith!@#"
+DATABASE_URL="sqlite:///./netnova.db"
+ALLOWED_ORIGINS="https://www.yourdomain.com,https://ops.yourdomain.com"
 ```
 
-If `DATABASE_URL` is not set, the app automatically composes it from `DB_*` values.
+> For production, migrate from SQLite to PostgreSQL and set `DATABASE_URL` accordingly.
 
 ## 5) Reverse proxy and TLS
 
@@ -76,7 +70,7 @@ Place NetNova behind HTTPS. Example Nginx upstream:
 ```nginx
 server {
   listen 443 ssl;
-  server_name netnovabilling.ambertelecoms.co.ke;
+  server_name ops.yourdomain.com;
 
   location / {
     proxy_pass http://127.0.0.1:8000;
@@ -94,8 +88,8 @@ server {
 
 From your website admin/ops area, link directly to:
 
-- Dashboard UI: `https://netnovabilling.ambertelecoms.co.ke/`
-- API docs: `https://netnovabilling.ambertelecoms.co.ke/docs`
+- Dashboard UI: `https://ops.yourdomain.com/`
+- API docs: `https://ops.yourdomain.com/docs`
 
 ### Pattern B: Server-to-server API integration
 
@@ -109,7 +103,7 @@ Use your website backend to call NetNova APIs:
 #### Example create customer with router enabled
 
 ```bash
-curl -X POST https://netnovabilling.ambertelecoms.co.ke/api/customers \
+curl -X POST https://ops.yourdomain.com/api/customers \
   -H 'Content-Type: application/json' \
   -d '{
     "name": "North District Fiber",
@@ -127,7 +121,7 @@ curl -X POST https://netnovabilling.ambertelecoms.co.ke/api/customers \
 #### Example get generated MikroTik script
 
 ```bash
-curl https://netnovabilling.ambertelecoms.co.ke/api/customers/1/router-config
+curl https://ops.yourdomain.com/api/customers/1/router-config
 ```
 
 ### Pattern C: Embedded iframe (internal-only)
@@ -136,7 +130,7 @@ If needed for internal tools:
 
 ```html
 <iframe
-  src="https://netnovabilling.ambertelecoms.co.ke/"
+  src="https://ops.yourdomain.com/"
   title="NetNova EVIL MARIA"
   width="100%"
   height="900"
@@ -186,6 +180,6 @@ docker compose up --build -d
 Run smoke checks after deploy:
 
 ```bash
-curl https://netnovabilling.ambertelecoms.co.ke/api/health
-curl https://netnovabilling.ambertelecoms.co.ke/api/metrics
+curl https://ops.yourdomain.com/api/health
+curl https://ops.yourdomain.com/api/metrics
 ```
