@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <p class="eyebrow">Admin Control Panel</p>
+        <h1>NET NOVA ISP BILLING - Admin Dashboard</h1>
+      </div>
+      <form method="post" action="/logout"><button type="submit">Logout</button></form>
+    </header>
+
+    <section class="stats">
+      <article><h3>Customers</h3><p>{{ stats.customer_count }}</p></article>
+      <article><h3>MRR</h3><p>${{ '%.2f'|format(stats.mrr) }}</p></article>
+      <article><h3>Unpaid</h3><p>${{ '%.2f'|format(stats.unpaid) }}</p></article>
+      <article class="critical"><h3>Critical Alerts</h3><p>{{ stats.critical_count }}</p></article>
+    </section>
+
+    <main>
+      <section>
+        <h3>Create Client Account</h3>
+        <form method="post" action="/admin/accounts" class="form-grid">
+          <input name="name" placeholder="Client name" required />
+          <input name="email" type="email" placeholder="Client email" required />
+          <input name="username" placeholder="Portal username" required />
+          <input name="password" type="password" placeholder="Portal password" required />
+          <input name="plan_name" placeholder="Package" required />
+          <input name="monthly_rate" type="number" step="0.01" min="0" placeholder="Monthly rate" required />
+          <input name="due_day" type="number" min="1" max="31" placeholder="Due day" required />
+          <label class="inline-checkbox"><input type="checkbox" name="has_router" value="true" />Enable router setup</label>
+          <input name="router_identity" placeholder="Router identity" />
+          <div class="two-cols">
+            <input name="wan_interface" value="ether1" placeholder="WAN interface" />
+            <input name="lan_interface" value="ether2" placeholder="LAN interface" />
+          </div>
+          <button type="submit">Create Client</button>
+        </form>
+      </section>
+
+      <section>
+        <h3>Client Access Management</h3>
+        <table>
+          <thead><tr><th>Username</th><th>Customer ID</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            {% for account in accounts %}
+              <tr>
+                <td>{{ account.username }}</td>
+                <td>{{ account.customer_id }}</td>
+                <td>{{ 'active' if account.active else 'disabled' }}</td>
+                <td>
+                  <form method="post" action="/admin/accounts/{{ account.id }}/toggle" class="inline-form"><button type="submit">{{ 'Disable' if account.active else 'Enable' }}</button></form>
+                  <form method="post" action="/admin/accounts/{{ account.id }}/remove" class="inline-form"><button type="submit">Remove</button></form>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="4">No client accounts yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h3>Router Scripts</h3>
+        <table>
+          <thead><tr><th>Client</th><th>Subnet</th><th>Gateway</th><th>Client IP</th><th>Script</th></tr></thead>
+          <tbody>
+            {% for config in router_configs %}
+            <tr>
+              <td>{{ config.customer_id }}</td>
+              <td>{{ config.subnet_cidr }}</td><td>{{ config.gateway_ip }}</td><td>{{ config.customer_ip }}</td>
+              <td><details><summary>view</summary><pre>{{ config.script }}</pre></details></td>
+            </tr>
+            {% else %}<tr><td colspan="5">No router scripts yet.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </body>
+</html>
