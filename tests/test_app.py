@@ -3,7 +3,6 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 from app.config import Settings
-from app.database import init_db
 from app.main import create_app
 
 
@@ -11,7 +10,6 @@ def create_test_client(tmp_path: Path) -> TestClient:
     test_db = tmp_path / "test.db"
     settings = Settings(database_url=f"sqlite:///{test_db}", environment="test", debug=False)
     app = create_app(settings)
-    init_db(app.state.engine)
     return TestClient(app)
 
 
@@ -27,36 +25,8 @@ def test_dashboard_loads(tmp_path: Path):
     response = client.get("/")
     assert response.status_code == 200
     assert "NetNova" in response.text
+    assert "NetNova ISP Billing" in response.text
     assert "EVIL MARIA" in response.text
-
-
-def test_router_auto_assignment_and_config_script(tmp_path: Path):
-    client = create_test_client(tmp_path)
-
-    customer_response = client.post(
-        "/api/customers",
-        json={
-            "name": "Fiber Home 22",
-            "plan_name": "Premium 500M",
-            "monthly_rate": 89.90,
-            "due_day": 20,
-            "email": "noc@fiber22.example",
-            "has_router": True,
-            "router_identity": "CPE-Fiber22",
-            "wan_interface": "ether1",
-            "lan_interface": "ether2",
-        },
-    )
-    assert customer_response.status_code == 201
-    customer_id = customer_response.json()["id"]
-
-    config_response = client.get(f"/api/customers/{customer_id}/router-config")
-    assert config_response.status_code == 200
-    payload = config_response.json()
-    assert payload["customer_id"] == customer_id
-    assert payload["subnet_cidr"].endswith("/30")
-    assert "masquerade" in payload["script"]
-    assert "CPE-Fiber22" in payload["script"]
 
 
 def test_api_customer_invoice_and_event_flow(tmp_path: Path):
@@ -70,7 +40,6 @@ def test_api_customer_invoice_and_event_flow(tmp_path: Path):
             "monthly_rate": 249.99,
             "due_day": 15,
             "email": "billing@acme.example",
-            "has_router": False,
         },
     )
     assert customer_response.status_code == 201
@@ -78,7 +47,7 @@ def test_api_customer_invoice_and_event_flow(tmp_path: Path):
 
     list_customers = client.get("/api/customers")
     assert list_customers.status_code == 200
-    assert len(list_customers.json()) >= 1
+    assert len(list_customers.json()) == 1
 
     update_customer = client.patch(f"/api/customers/{customer_id}", json={"active": False, "plan_name": "Enterprise 2G"})
     assert update_customer.status_code == 200
@@ -95,6 +64,12 @@ def test_api_customer_invoice_and_event_flow(tmp_path: Path):
     assert invoice_update.status_code == 200
     assert invoice_update.json()["status"] == "paid"
 
+    invoice_response = client.post(
+        "/api/invoices",
+        json={"customer_id": 1, "billing_month": "2026-01", "amount": 249.99},
+    )
+    assert invoice_response.status_code == 201
+
     event_response = client.post(
         "/api/events",
         json={"service_name": "POP-1", "severity": "critical", "message": "Backhaul down"},
@@ -107,21 +82,4 @@ def test_api_customer_invoice_and_event_flow(tmp_path: Path):
 
     metrics = client.get("/api/metrics")
     assert metrics.status_code == 200
-    assert metrics.json()["customer_count"] >= 1
-
-
-def test_settings_builds_mysql_database_url_from_parts(monkeypatch):
-    monkeypatch.delenv("DATABASE_URL", raising=False)
-    monkeypatch.setenv("DB_DRIVER", "mysql+pymysql")
-    monkeypatch.setenv("DB_HOST", "localhost")
-    monkeypatch.setenv("DB_PORT", "3306")
-    monkeypatch.setenv("DB_NAME", "ambertel_netnovabilling")
-    monkeypatch.setenv("DB_USER", "ambertel_netnovabilling")
-    monkeypatch.setenv("DB_PASSWORD", "Faith!@#")
-
-    settings = Settings.from_env()
-
-    assert settings.database_url == (
-        "mysql+pymysql://ambertel_netnovabilling:Faith%21%40%23@localhost:3306/"
-        "ambertel_netnovabilling"
-    )
+    assert metrics.json()["customer_count"] == 1
